@@ -1,5 +1,6 @@
 package chess;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ public class ChessMatch {
 	private boolean check;
 	private boolean checkMate;
 	private ChessPiece enPassantVulnerable;
+	private ChessPiece promoted;
 
 	private List<Piece> piecesOnTheBoard = new ArrayList<>();
 	private List<Piece> capturedPieces = new ArrayList<>();
@@ -51,6 +53,10 @@ public class ChessMatch {
 	
 	public ChessPiece getEnPassantVulnerable() {
 		return this.enPassantVulnerable;
+	}
+	
+	public ChessPiece getPromoted() {
+		return this.promoted;
 	}
 
 	public ChessPiece[][] getPieces() {
@@ -84,6 +90,15 @@ public class ChessMatch {
 		}
 		
 		ChessPiece movedPiece = (ChessPiece) this.board.piece(target);
+		
+		// #special move promotion
+		this.promoted = null;
+		if(movedPiece instanceof Pawn) {
+			if((movedPiece.getColor() == Color.WHITE && target.getRow() == 0) || (movedPiece.getColor() == Color.BLACK && target.getRow() == 7)) {
+				this.promoted = (ChessPiece) this.board.piece(target);
+				this.promoted = replacePromotedPiece("Q");
+			}
+		}
 
 		this.check = (testCheck(opponent(this.currentPlayer))) ? true : false;
 
@@ -102,6 +117,40 @@ public class ChessMatch {
 		}
 
 		return (ChessPiece) capturedPiece;
+	}
+	
+	public ChessPiece replacePromotedPiece(String type) {
+		if(this.promoted == null) {
+			throw new IllegalStateException("There is no piece to be promoted");
+		}
+		if(!type.equals("B") && !type.equals("N") && !type.equals("R") && !type.equals("Q")) {
+			throw new InvalidParameterException("Invalid type for promotion");
+		}
+		
+		Position pos = this.promoted.getChessPosition().toPosition();
+		Piece p = this.board.removePiece(pos);
+		this.piecesOnTheBoard.remove(p);
+		
+		ChessPiece newPiece = newPiece(type, this.promoted.getColor());
+		this.board.placePiece(newPiece, pos);
+		this.piecesOnTheBoard.add(newPiece);
+		
+		return newPiece;
+	}
+	
+	private ChessPiece newPiece(String type, Color color) {
+		if(type.equals("B")) {
+			return new Bishop(this.board, color);
+		}
+		else if(type.equals("N")) {
+			return new Knight(this.board, color);
+		}
+		else if(type.equals("Q")) {
+			return new Queen(this.board, color);
+		}
+		else {
+			return new Rook(this.board, color);
+		}
 	}
 
 	private Piece makeMove(Position source, Position target) {
