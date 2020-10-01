@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import boardgame.Board;
 import boardgame.Piece;
 import boardgame.Position;
+import chess.pieces.Bishop;
 import chess.pieces.King;
 import chess.pieces.Pawn;
 import chess.pieces.Rook;
@@ -74,6 +75,8 @@ public class ChessMatch {
 			undoMove(source, target, capturedPiece);
 			throw new ChessException("You can't put yourself in check");
 		}
+		
+		System.out.println("Verificando se o oponente está em cheque:");
 		
 		this.check = (testCheck(opponent(this.currentPlayer))) ? true : false;
 		
@@ -155,7 +158,7 @@ public class ChessMatch {
 		// Testando se o king da cor color está em check
 		Position kingPosition = king(color).getChessPosition().toPosition();
 		List<Piece> opponentPieces = this.piecesOnTheBoard.stream().filter(x -> ((ChessPiece) x).getColor() == opponent(color)).collect(Collectors.toList());
-		
+				
 		for(Piece p: opponentPieces) {
 			boolean[][] mat = p.possibleMoves();
 			if(mat[kingPosition.getRow()][kingPosition.getColumn()]) {
@@ -199,7 +202,9 @@ public class ChessMatch {
 	
 	private void initialSetup() {
 		placeNewPiece('a', 1, new Rook(board, Color.WHITE));
+		placeNewPiece('c', 1, new Bishop(board, Color.WHITE));
         placeNewPiece('e', 1, new King(board, Color.WHITE));
+        placeNewPiece('f', 1, new Bishop(board, Color.WHITE));
         placeNewPiece('h', 1, new Rook(board, Color.WHITE));
         placeNewPiece('a', 2, new Pawn(board, Color.WHITE));
         placeNewPiece('b', 2, new Pawn(board, Color.WHITE));
@@ -211,7 +216,9 @@ public class ChessMatch {
         placeNewPiece('h', 2, new Pawn(board, Color.WHITE));
 
         placeNewPiece('a', 8, new Rook(board, Color.BLACK));
+        placeNewPiece('c', 8, new Bishop(board, Color.BLACK));
         placeNewPiece('e', 8, new King(board, Color.BLACK));
+        placeNewPiece('f', 8, new Bishop(board, Color.BLACK));
         placeNewPiece('h', 8, new Rook(board, Color.BLACK));
         placeNewPiece('a', 7, new Pawn(board, Color.BLACK));
         placeNewPiece('b', 7, new Pawn(board, Color.BLACK));
